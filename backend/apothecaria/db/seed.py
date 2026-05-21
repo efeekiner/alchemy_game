@@ -24,11 +24,13 @@ def _load_json(name: str) -> list[dict[str, Any]]:
 
 
 def seed_database(connection: Connection) -> None:
-    """Idempotently load content JSON into the DB.
+    """Idempotently load content JSON into the DB using upsert semantics.
 
-    Uses **upsert semantics**: existing rows (matched by slug) are updated
-    to match the JSON. This matters during the workshop — students edit
-    these files in Module 1 and expect ``make seed`` to reflect changes.
+    Use this when initialising or refreshing the database from the content
+    JSON files (e.g. after a student edits ingredients or recipes in Module 1).
+    Existing rows matched by slug are updated; new rows are inserted.
+    :param connection: An open SQLAlchemy :class:`~sqlalchemy.engine.Connection`
+        (typically obtained from ``engine.connect()``).
     """
     with Session(bind=connection) as session:
         _seed_ingredients(session)
@@ -89,7 +91,11 @@ def _seed_player_state(session: Session) -> None:
 
 
 def main() -> None:
-    """CLI entry: ``python -m apothecaria.db.seed``."""
+    """Initialise the database schema and seed it from the content JSON files.
+
+    Use this as the CLI entry point via ``python -m apothecaria.db.seed``
+    or ``make seed`` to (re-)populate a local database.
+    """
     from apothecaria.db.session import engine, init_db
 
     init_db()

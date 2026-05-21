@@ -21,7 +21,11 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 
 
 def get_session_iter() -> Iterator[Session]:
-    """Generator-style session for FastAPI Depends. (Re-exported in api/deps.py.)"""
+    """Yield a SQLAlchemy session that auto-commits on success and rolls back on error.
+
+    Use this as a FastAPI ``Depends`` provider to inject a per-request DB session.
+    :return: An open :class:`~sqlalchemy.orm.Session` (generator, for use with ``yield``).
+    """
     session = SessionLocal()
     try:
         yield session
@@ -34,5 +38,10 @@ def get_session_iter() -> Iterator[Session]:
 
 
 def init_db() -> None:
-    """Create all tables. Safe to call multiple times."""
+    """Create all ORM-mapped tables in the configured database.
+
+    Use this at application startup or in test fixtures to ensure the schema
+    exists before any queries run. Safe to call multiple times (no-op if tables
+    already exist).
+    """
     Base.metadata.create_all(engine)
