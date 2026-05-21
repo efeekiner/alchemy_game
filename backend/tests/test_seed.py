@@ -45,7 +45,7 @@ def test_seed_is_idempotent_no_duplicates(db_engine):
         seed_database(conn)
     with Session(db_engine) as session:
         assert len(session.scalars(select(Ingredient)).all()) == 6
-        assert len(session.scalars(select(Recipe)).all()) == 5
+        assert len(session.scalars(select(Recipe)).all()) == 6
 
 
 def test_seed_upserts_existing_rows(db_engine):

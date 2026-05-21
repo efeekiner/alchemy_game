@@ -3,5 +3,6 @@
   {"slug": "energy_elixir", "name": "Energy Elixir", "ailment_category": "fatigue", "lore": "A bright fizzing tonic that lifts heavy limbs.",         "ingredients": ["mushroom", "feather"],       "sprite": "energy_elixir.png"},
   {"slug": "calming_tonic", "name": "Calming Tonic", "ailment_category": "anxiety", "lore": "Smells of evening grass. Steadies a fluttering heart.",  "ingredients": ["sage", "root"],              "sprite": "calming_tonic.png"},
   {"slug": "healing_balm",  "name": "Healing Balm",  "ailment_category": "wound",     "lore": "A thick green balm that knits skin and silences pain.",  "ingredients": ["moonpetal", "eye-of-newt"],  "sprite": "healing_balm.png"},
-  {"slug": "fog_veil",     "name": "Fog Veil",     "ailment_category": "confusion", "lore": "A swirling silver draught that lifts the haze from tangled thoughts.", "ingredients": ["moonpetal", "sage", "feather"], "sprite": "fog_veil.png"}
+  {"slug": "fog_veil",     "name": "Fog Veil",     "ailment_category": "confusion", "lore": "A swirling silver draught that lifts the haze from tangled thoughts.", "ingredients": ["moonpetal", "sage", "feather"], "sprite": "fog_veil.png"},
+  {"slug": "sorrowmend_cordial", "name": "Sorrowmend Cordial", "ailment_category": "sorrow", "lore": "A warm amber draught that softens grief without numbing it.", "ingredients": ["root", "moonpetal", "feather"], "sprite": "sorrowmend_cordial.png"}
 ]
