@@ -1,155 +1,88 @@
 ---
 name: new-mixture
-description: >-
-  Adds a new mixture (recipe, potion, or brew) to the Apothecaria game.
-  Use this skill whenever someone asks to add, create, or introduce a new
-  mixture, recipe, potion, brew, or draught — even if they don't use those
-  exact words. Handles everything from validating ingredients through
-  opening a PR.
+description: Use when the user asks to add a new mixture, recipe, potion, or brew to the Apothecaria game. Adds a recipe to the JSON seed so it shows up in /api/recipes and is brewable via /api/brew.
 ---
 
 # New Mixture
 
-A mixture is a recipe entry in the apothecary's book. Once added, it
-appears in `/api/recipes` and becomes brewable via `/api/brew`. The
-game's seed-loader and brewing engine pick up new recipes automatically —
-no API, domain, or DB code changes are needed.
+Adding a new mixture means adding a recipe entry so the apothecary recognizes it: it shows up in `/api/recipes` and can be brewed via `/api/brew` after re-seeding.
 
-## What you need from the user
+## Required inputs
 
-Collect all five of these before touching any files. If something is
-missing, ask — don't guess.
+Before making any changes, confirm the user has provided:
 
-| Field              | Format                         | Example              |
-| ------------------ | ------------------------------ | -------------------- |
-| **slug**           | `snake_case`, unique           | `fog_veil`           |
-| **name**           | Display name                   | Fog Veil             |
-| **ailment_category** | Short lowercase tag          | `confusion`          |
-| **ingredients**    | List of existing ingredient slugs | `["moonpetal", "sage", "feather"]` |
-| **lore**           | One evocative sentence         | "A swirling silver draught…" |
+- **slug** — lowercase, `snake_case`, unique among existing recipes. e.g. `fog_veil`.
+- **name** — human display name. e.g. "Fog Veil".
+- **ailment_category** — short tag (`confusion`, `wound`, `sleep`, `fatigue`, `anxiety`, `sorrow`, …). Reuse an existing category when possible.
+- **ingredients** — list of slugs that **must already exist** in `backend/apothecaria/content/ingredients.json`.
+- **lore** — one-line flavor description, matching the sensory, evocative tone of existing entries.
 
-Reuse an existing `ailment_category` when it fits (`sleep`, `fatigue`,
-`anxiety`, `wound`, `confusion`, `sorrow`, …). Invent a new one only
-when nothing matches.
+If anything is missing or ambiguous, ask the user before proceeding.
 
-## Before you start
+## Preconditions
 
-1. **Working tree is clean.** Run `git status`. If there are uncommitted
-   changes, ask the user to commit or stash first — mixing unrelated
-   changes makes the PR messy.
-2. **`gh` is authenticated.** Run `gh auth status`. If it fails, finish
-   through the test step and then tell the user to run `gh auth login`.
+- The working tree must be clean (`git status` shows no changes). If it isn't, stop and ask the user to commit or stash first.
+- `gh` (GitHub CLI) must be installed and authenticated for the PR step. If `gh auth status` fails, stop after the test step and tell the user to run `gh auth login` before continuing.
 
-## Workflow
+## Steps
 
-### 1 — Validate ingredients
+1. **Validate.** Read `backend/apothecaria/content/ingredients.json` and confirm every requested ingredient slug exists. If any are missing, stop and tell the user to add the ingredient first — that's a separate task, not part of this skill.
 
-Read `backend/apothecaria/content/ingredients.json` and confirm every
-requested slug exists. If any are missing, stop — adding ingredients is a
-separate task. Tell the user which ones are missing so they can add them
-first.
+2. **Confirm uniqueness.** Read `backend/apothecaria/content/recipes.json` and confirm the new `slug` and the new ingredient-set are both unique. The brewing engine matches recipes by ingredient set, so two recipes with identical ingredient sets would collide.
 
-### 2 — Confirm uniqueness
+3. **Add the entry to `backend/apothecaria/content/recipes.json`.** Match the existing entries' shape and one-line-per-object formatting exactly. Trailing newline preserved.
 
-Read `backend/apothecaria/content/recipes.json` and check two things:
+4. **Re-seed:**
+   ```bash
+   make seed
+   ```
 
-- The new **slug** doesn't already exist.
-- The new **ingredient set** (order-independent) doesn't match any
-  existing recipe. The brewing engine matches by exact ingredient set, so
-  duplicates would collide and one recipe would shadow the other.
+5. **Extend tests.** Add an assertion in `backend/tests/test_api_recipes.py` that the new mixture is present in the API response with its expected ingredients. Follow the patterns already in that file.
 
-### 3 — Add the recipe entry
+6. **Run the test suite:**
+   ```bash
+   make test
+   ```
 
-Append a new JSON object to `backend/apothecaria/content/recipes.json`.
-Match the shape and one-line-per-object formatting of existing entries.
-Include a `sprite` field set to `<slug>.png` — the actual image can be
-added later.
+7. **Branch, commit, push, open the PR.** Create a branch named `add-mixture-<slug>`, commit just the two changed files with a Conventional Commit message, push, and open a PR with the body template below.
 
-Preserve the trailing newline at end of file.
+   ```bash
+   git checkout -b add-mixture-<slug>
+   git add backend/apothecaria/content/recipes.json backend/tests/test_api_recipes.py
+   git commit -m "feat(content): add <name> mixture"
+   git push -u origin add-mixture-<slug>
+   gh pr create --title "Add <name> mixture" --body "$(cat <<'EOF'
+   ## Summary
+   Adds a new mixture **<name>** (`<slug>`) for the `<ailment_category>` ailment.
 
-### 4 — Re-seed the database
+   ## Recipe
+   - **Ingredients:** <comma-separated ingredient slugs>
+   - **Lore:** <lore line>
 
-```bash
-make seed
-```
+   ## Verification
+   - `make seed` upserts the new recipe.
+   - `make test` passes; extended `test_api_recipes.py` with an assertion that this mixture appears in the API response with its expected ingredients.
 
-This upserts the new recipe into SQLite. No migration is needed — the
-seed loader handles everything.
+   ## What this PR does *not* touch
+   API routes, brewing logic, DB models, frontend. The seed loader and DB-backed brew-matching pick up the new recipe automatically.
+   EOF
+   )"
+   ```
 
-### 5 — Update tests
+   Substitute `<slug>`, `<name>`, `<ailment_category>`, the ingredient list, and the lore line into both the title and body. Print the PR URL `gh` returns.
 
-Three test files reference recipe counts or slug sets. Update them all:
-
-**`backend/tests/test_api_recipes.py`** — The test that asserts the
-total recipe count and the set of slugs needs to include the new recipe.
-Add the new slug to the expected set and bump the count.
-
-**`backend/tests/test_seed.py`** — The idempotency test
-(`test_seed_is_idempotent_no_duplicates`) asserts the total number of
-recipes. Bump the expected count by one.
-
-**`backend/tests/test_brewing.py`** — Add a new test that brews the
-exact ingredient list and asserts `matched_recipe_slug`, `matched_recipe_name`,
-`matched_ailment_category`, and `quality_score == 1.0`. Follow the
-pattern of the existing exact-match tests.
-
-### 6 — Run the test suite
-
-```bash
-make test
-```
-
-All tests must pass. If anything fails, fix it before continuing.
-
-### 7 — Branch, commit, and open a PR
-
-```bash
-git checkout -b add-mixture-<slug>
-git add backend/apothecaria/content/recipes.json \
-       backend/tests/test_api_recipes.py \
-       backend/tests/test_seed.py \
-       backend/tests/test_brewing.py
-git commit -m "feat(content): add <name> mixture"
-git push -u origin add-mixture-<slug>
-gh pr create \
-  --title "Add <name> mixture" \
-  --body "## Summary
-Adds **<name>** (\`<slug>\`) for the \`<ailment_category>\` ailment.
-
-## Recipe
-- **Ingredients:** <comma-separated slugs>
-- **Lore:** <lore>
-
-## Verification
-- \`make seed\` upserts the new recipe.
-- \`make test\` passes with updated counts and a new brew test.
-
-## Scope
-Content-only change. Does not touch API routes, brewing logic, DB
-models, or frontend — they pick up new recipes automatically."
-```
-
-Substitute all `<placeholders>`. Print the PR URL that `gh` returns.
-
-### 8 — Show the diff
-
-Run `/diff` and give the user a short summary of what changed.
+8. **Show the diff** with `/diff` and summarize the change.
 
 ## Files this skill touches
 
-| File | Change |
-| ---- | ------ |
-| `backend/apothecaria/content/recipes.json` | New recipe object |
-| `backend/tests/test_api_recipes.py` | Updated count + slug set |
-| `backend/tests/test_seed.py` | Updated recipe count |
-| `backend/tests/test_brewing.py` | New exact-match brew test |
+- `backend/apothecaria/content/recipes.json` (always)
+- `backend/tests/test_api_recipes.py` (always)
+- One new git branch + one PR (always)
+- *Not* the API routes, brewing logic, or frontend — those auto-discover recipes from the DB.
 
-## Boundaries
+## What NOT to do
 
-- **Don't** add new ingredients. If the recipe needs one that doesn't
-  exist, stop and tell the user.
-- **Don't** edit API routes, brewing logic, or DB models — the generic
-  machinery handles everything.
-- **Don't** add a database migration. The JSON seed is the source of
-  truth; `make seed` upserts.
-- **Don't** touch the frontend. The recipe list is fetched dynamically.
+- Don't add new ingredients here. If the recipe needs one, stop and tell the user.
+- Don't edit the API, brewing logic, or DB models.
+- Don't add a database migration — the JSON seed is the source of truth; `make seed` upserts.
+- Don't touch the frontend.
