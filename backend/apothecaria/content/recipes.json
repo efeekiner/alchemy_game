@@ -2,6 +2,11 @@
   {"slug": "sleep_draught", "name": "Sleep Draught", "ailment_category": "sleep",   "lore": "A gentle indigo brew that quiets a restless mind.",     "ingredients": ["moonpetal", "sage", "root"], "sprite": "sleep_draught.png"},
   {"slug": "energy_elixir", "name": "Energy Elixir", "ailment_category": "fatigue", "lore": "A bright fizzing tonic that lifts heavy limbs.",         "ingredients": ["mushroom", "feather"],       "sprite": "energy_elixir.png"},
   {"slug": "calming_tonic", "name": "Calming Tonic", "ailment_category": "anxiety", "lore": "Smells of evening grass. Steadies a fluttering heart.",  "ingredients": ["sage", "root"],              "sprite": "calming_tonic.png"},
+<<<<<<< Updated upstream
   {"slug": "healing_balm",  "name": "Healing Balm",  "ailment_category": "wound",     "lore": "A thick green balm that knits skin and silences pain.",  "ingredients": ["moonpetal", "eye-of-newt"],  "sprite": "healing_balm.png"},
   {"slug": "fog_veil",     "name": "Fog Veil",     "ailment_category": "confusion", "lore": "A swirling silver draught that lifts the haze from tangled thoughts.", "ingredients": ["moonpetal", "sage", "feather"], "sprite": "fog_veil.png"}
+=======
+  {"slug": "healing_balm",  "name": "Healing Balm",  "ailment_category": "wound",     "lore": "A thick green balm that knits skin and silences pain.",                              "ingredients": ["moonpetal", "eye-of-newt"],           "sprite": "healing_balm.png"},
+  {"slug": "fog_veil",      "name": "Fog Veil",      "ailment_category": "confusion", "lore": "A pale, drifting smoke that clears the mind of fog and false visions.",            "ingredients": ["moonpetal", "sage", "feather"],       "sprite": "fog_veil.png"}
+>>>>>>> Stashed changes
 ]

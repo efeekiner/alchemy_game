@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 ## Build, test, and lint
 
 All commands use `make` targets. Python deps are managed by `uv`; frontend deps by `npm`.
@@ -34,6 +35,9 @@ Active customers live **in memory** (`CustomerStore`), not in the database. Brew
 ## Conventions
 
 ### Python docstrings
+=======
+## Docstrings
+>>>>>>> Stashed changes
 
 When writing or updating a Python function or method, give it a docstring in this exact format:
 
@@ -44,6 +48,7 @@ When writing or updating a Python function or method, give it a docstring in thi
 
 - Use reST `:param:` / `:return:` fields — not Google-style "Args:"/"Returns:".
 - Skip `:return:` for functions that return `None`.
+<<<<<<< Updated upstream
 - Skip `self` from the parameter list on methods.
 
 ### Two model layers
@@ -63,3 +68,6 @@ All settings via env vars with `APOTHECARIA_` prefix (see `config.py`). Pydantic
 ### Content changes
 
 To add or modify game content (ingredients, recipes, customers), edit the JSON files in `backend/apothecaria/content/` and run `make seed`. Pydantic seed schemas validate the JSON at load time.
+=======
+- Skip `self` from the parameter list on methods.
+>>>>>>> Stashed changes
