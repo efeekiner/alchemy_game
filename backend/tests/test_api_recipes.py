@@ -18,3 +18,11 @@ def test_recipe_lists_ingredients(client, db_engine):
     response = client.get("/api/recipes")
     sleep = next(r for r in response.json() if r["slug"] == "sleep_draught")
     assert set(sleep["ingredient_slugs"]) == {"moonpetal", "sage", "root"}
+
+
+def test_fog_veil_lists_ingredients(client, db_engine):
+    with db_engine.connect() as conn:
+        seed_database(conn)
+    response = client.get("/api/recipes")
+    fog_veil = next(r for r in response.json() if r["slug"] == "fog_veil")
+    assert set(fog_veil["ingredient_slugs"]) == {"moonpetal", "sage", "feather"}
