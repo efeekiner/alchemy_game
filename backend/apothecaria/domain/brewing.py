@@ -8,6 +8,14 @@ from apothecaria.domain.models import BrewResult
 
 
 def combine_ingredients(ingredient_slugs: list[str], session: Session) -> BrewResult:
+    """Attempt to match a set of ingredients against every known recipe.
+
+    Use this when the player submits ingredients to the cauldron — either for
+    a standalone brew or as part of serving a customer.
+    :param ingredient_slugs: Ordered list of ingredient slugs the player combined.
+    :param session: Active SQLAlchemy session used to query ingredients and recipes.
+    :return: A :class:`BrewResult` describing the matched recipe (or failure).
+    """
     if not ingredient_slugs:
         return BrewResult(
             matched_recipe_slug=None,

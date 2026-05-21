@@ -9,7 +9,14 @@ from apothecaria.domain.models import BrewResult, CustomerInstance, Outcome, Ser
 
 
 def determine_outcome(brew: BrewResult, customer: CustomerInstance) -> tuple[Outcome, int, str]:
-    """Pure function: outcome + reputation delta + customer response. No side effects."""
+    """Compute the outcome, reputation delta, and customer response for a brew attempt.
+
+    Use this when you need a pure, side-effect-free evaluation of how well a brew
+    matched a customer's request (e.g. in tests or dry-run previews).
+    :param brew: The result produced by :func:`~apothecaria.domain.brewing.combine_ingredients`.
+    :param customer: The customer currently being served.
+    :return: A tuple of (outcome enum, reputation delta, flavour-text response).
+    """
     if brew.matched_recipe_slug == customer.expected_recipe_slug:
         return (
             Outcome.DELIGHTED,
@@ -37,7 +44,16 @@ def determine_outcome(brew: BrewResult, customer: CustomerInstance) -> tuple[Out
 
 
 def apply_outcome(brew: BrewResult, customer: CustomerInstance, session: Session) -> ServiceResult:
-    """Compute outcome, update PlayerState, append a BrewHistory row."""
+    """Compute the outcome and persist reputation change and brew history.
+
+    Use this in the serve-customer flow after brewing: it calls
+    :func:`determine_outcome`, updates :class:`~apothecaria.db.models.PlayerState`,
+    and appends a :class:`~apothecaria.db.models.BrewHistory` row.
+    :param brew: The brew result from combining the player's ingredients.
+    :param customer: The customer being served.
+    :param session: Active SQLAlchemy session used to read and write game state.
+    :return: A :class:`ServiceResult` with outcome, deltas, and customer response text.
+    """
     outcome, delta, response = determine_outcome(brew, customer)
 
     state = session.get(PlayerState, 1)
